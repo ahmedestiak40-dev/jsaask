@@ -8,11 +8,12 @@
     <!-- Tone.js for sound synthesis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Orbitron:wght@500;700&display=swap');
 
+        /* New Font for a sharper arcade feel */
         body {
-            font-family: 'Fredoka', sans-serif;
-            background: linear-gradient(135deg, #1f4068 0%, #162447 100%);
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #0f0a1f 0%, #200030 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,13 +23,18 @@
         }
 
         #game-container {
-            background: #2a3d58;
-            border: 8px solid #5d8aa8;
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            background: #1a112c;
+            /* Neon/Cyberpunk border and glow */
+            border: 5px solid #00ffff; 
+            border-radius: 25px;
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.5), /* Outer Neon Glow */
+                0 15px 35px rgba(0, 0, 0, 0.8), /* Deep Shadow */
+                inset 0 0 20px rgba(255, 255, 255, 0.05); /* Inner Highlight */
+            padding: 20px;
             text-align: center;
-            max-width: 90%;
+            max-width: 95%;
+            width: fit-content;
             transition: all 0.3s ease;
         }
 
@@ -36,22 +42,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding: 0 10px;
-            color: #ffcc29;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background: #0d0a13;
+            border-radius: 10px;
+            border: 2px solid #ff00ff; /* Magenta highlight */
+            box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.5);
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
         }
 
         #game-info div {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 700;
+            letter-spacing: 1px;
         }
 
         #game-canvas {
-            background: #394b62;
+            background: #0a0518; /* Very dark canvas */
             display: block;
-            border-radius: 10px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 0, 0, 0.7);
             cursor: crosshair;
         }
 
@@ -60,46 +71,39 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 30px 50px;
+            padding: 40px 60px;
             background: #ffcc29;
-            color: #162447;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
-            font-size: 2rem;
+            color: #1a112c;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+            font-size: 2.5rem;
             font-weight: 700;
             z-index: 100;
             display: none;
             text-align: center;
             user-select: none;
             cursor: pointer;
-        }
-
-        .bubble {
-            border-radius: 50%;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.5);
-            transition: transform 0.1s;
-        }
-
-        .bubble:hover {
-            transform: scale(1.05);
+            border: 4px solid white;
         }
 
         #restart-button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #e94560;
-            color: white;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: linear-gradient(145deg, #ff00ff, #e94560);
+            color: #0d0a13;
             border: none;
-            border-radius: 8px;
-            font-size: 1.2rem;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px #c33a52;
+            box-shadow: 0 6px #a800a8;
             transition: all 0.1s;
+            text-transform: uppercase;
         }
 
         #restart-button:active {
-            box-shadow: 0 2px #c33a52;
-            transform: translateY(2px);
+            box-shadow: 0 2px #a800a8;
+            transform: translateY(4px);
         }
     </style>
 </head>
@@ -143,12 +147,13 @@
     const X_OFFSET = BUBBLE_RADIUS + BUBBLE_GAP / 2;
     const TOP_MARGIN = 50;
 
+    // Updated Color Palette for a more vibrant look
     const COLORS = [
-        '#e94560', // Red
-        '#ffcc29', // Yellow
-        '#00adb5', // Cyan
-        '#8b5cbf', // Purple
-        '#41d3a7', // Green
+        '#ff4d4d', // Bright Red
+        '#ffee58', // Bright Yellow
+        '#00bcd4', // Bright Cyan
+        '#9c27b0', // Deep Purple
+        '#66bb6a', // Bright Green
     ];
 
     // Game State
@@ -164,9 +169,9 @@
     let synthPop;
     let synthShoot;
     let synthDrop;
-    let synthAttach; // For when a bubble sticks
-    let synthBounce; // For when a bubble hits the wall
-    let synthGameEnd; // For game over/win states
+    let synthAttach;
+    let synthBounce;
+    let synthGameEnd;
 
 
     // --- Utility Functions ---
@@ -225,19 +230,18 @@
     // --- Audio Setup ---
 
     async function initAudio() {
-        // Start Tone.js context on user action (important for modern browsers)
         if (Tone.context.state !== 'running') {
             await Tone.start();
         }
 
-        // 1. Pop Sound (PolySynth for multiple simultaneous pops)
+        // 1. Pop Sound 
         synthPop = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "square" },
             envelope: { attack: 0.001, decay: 0.1, sustain: 0.0, release: 0.1 },
             volume: -10
         }).toDestination();
 
-        // 2. Shoot Sound (PluckSynth for a quick, sharp effect)
+        // 2. Shoot Sound
         synthShoot = new Tone.PluckSynth({
             attackNoise: 1,
             dampening: 4000,
@@ -245,7 +249,7 @@
             volume: -10
         }).toDestination();
 
-        // 3. Drop Sound (MembraneSynth for a low thud)
+        // 3. Drop Sound
         synthDrop = new Tone.MembraneSynth({
             pitchDecay: 0.01,
             octaves: 2,
@@ -253,14 +257,14 @@
             volume: -15
         }).toDestination();
         
-        // 4. Attach/Stick Sound (Soft, low-frequency click)
+        // 4. Attach/Stick Sound 
         synthAttach = new Tone.NoiseSynth({
             noise: { type: 'pink' },
             envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 },
             volume: -20
         }).toDestination();
 
-        // 5. Wall Bounce Sound (Metallic ping)
+        // 5. Wall Bounce Sound 
         synthBounce = new Tone.MetalSynth({
             frequency: 150,
             envelope: { attack: 0.001, decay: 0.05, release: 0.1 },
@@ -269,7 +273,7 @@
             volume: -15
         }).toDestination();
 
-        // 6. Game End Sound (PolySynth for chords - FIX: MembraneSynth doesn't handle chords well)
+        // 6. Game End Sound (PolySynth for chords)
         synthGameEnd = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "sine" },
             envelope: { attack: 0.02, decay: 0.5, sustain: 0.1, release: 1 },
@@ -290,16 +294,14 @@
         const maxRows = 7; // Start with 7 rows of bubbles
         const availableColors = [];
 
-        // Determine which colors are present in the initial grid
         for (let r = 0; r < maxRows; r++) {
             const row = [];
-            const cols = r % 2 === 0 ? GRID_COLS : GRID_COLS - 1; // Staggered columns
+            const cols = r % 2 === 0 ? GRID_COLS : GRID_COLS - 1; 
             for (let c = 0; c < cols; c++) {
-                // Generate a random color, but limit it to ensure pop-ability
                 let colorIndex;
-                if (r < 3) { // Use all colors in the first 3 rows
+                if (r < 3) {
                     colorIndex = Math.floor(Math.random() * COLORS.length);
-                } else { // Use a subset of colors below row 3 to keep it playable
+                } else {
                     colorIndex = Math.floor(Math.random() * 4);
                 }
 
@@ -309,7 +311,7 @@
                     r: r,
                     c: c,
                     state: 'fixed',
-                    x: 0, y: 0 // Will be set in draw
+                    x: 0, y: 0
                 });
                 if (!availableColors.includes(color)) {
                     availableColors.push(color);
@@ -318,7 +320,6 @@
             grid.push(row);
         }
 
-        // Ensure the launcher only uses colors currently in the grid
         const validColors = availableColors.length > 0 ? availableColors : COLORS;
         nextBubbleColor = validColors[Math.floor(Math.random() * validColors.length)];
     }
@@ -337,13 +338,9 @@
             isPopping: false
         };
 
-        // Pick the next bubble color immediately
         nextBubbleColor = validColors[Math.floor(Math.random() * validColors.length)];
     }
 
-    /**
-     * Finds colors present in the current grid for the launcher.
-     */
     function getValidLauncherColors() {
         const presentColors = new Set();
         grid.forEach(row => {
@@ -374,7 +371,6 @@
             cancelAnimationFrame(animationFrameId);
         }
 
-        // Initialize audio context on game start/restart
         await initAudio(); 
 
         initCanvas();
@@ -396,26 +392,28 @@
         ctx.beginPath();
         ctx.arc(x, y, BUBBLE_RADIUS, 0, Math.PI * 2);
 
-        // Radial Gradient for 3D effect
+        // Enhanced Radial Gradient for a 'shiny, gel-like' bubble look
         const gradient = ctx.createRadialGradient(
-            x - BUBBLE_RADIUS / 4, y - BUBBLE_RADIUS / 4, BUBBLE_RADIUS / 4,
+            x - BUBBLE_RADIUS / 3, y - BUBBLE_RADIUS / 3, BUBBLE_RADIUS / 4,
             x, y, BUBBLE_RADIUS
         );
         gradient.addColorStop(0, 'white');
         gradient.addColorStop(0.5, color);
+        gradient.addColorStop(0.9, color);
         gradient.addColorStop(1, 'rgba(0,0,0,0.5)');
 
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // White highlight (optional)
+        // White highlight 
         ctx.beginPath();
         ctx.arc(x - BUBBLE_RADIUS / 3, y - BUBBLE_RADIUS / 3, BUBBLE_RADIUS / 4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.fill();
 
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-        ctx.lineWidth = 1;
+        // Dark inner shadow/rim
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
     }
 
@@ -433,12 +431,21 @@
     }
 
     function drawShooter() {
-        // Draw the shooter base
-        ctx.fillStyle = '#1e3046';
+        // Draw the shooter base (darker, metallic look)
+        ctx.fillStyle = '#0f0a18';
         ctx.fillRect(CANVAS_WIDTH / 2 - 50, CANVAS_HEIGHT - 30, 100, 30);
         ctx.beginPath();
         ctx.arc(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 30, 50, Math.PI, Math.PI * 2);
         ctx.fill();
+        
+        // Neon line on shooter base
+        ctx.strokeStyle = '#00ffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(CANVAS_WIDTH / 2 - 45, CANVAS_HEIGHT - 28);
+        ctx.lineTo(CANVAS_WIDTH / 2 + 45, CANVAS_HEIGHT - 28);
+        ctx.stroke();
+
 
         // Draw the ready bubble
         if (activeBubble && activeBubble.state === 'ready') {
@@ -447,10 +454,15 @@
 
         // Draw the next bubble preview
         if (nextBubbleColor) {
-            ctx.fillStyle = 'white';
-            ctx.fillText('NEXT', CANVAS_WIDTH / 2 + 50, CANVAS_HEIGHT - 10);
+            ctx.font = '12px "Orbitron", sans-serif';
+            ctx.fillStyle = '#ff00ff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('NEXT', CANVAS_WIDTH / 2 + 100, CANVAS_HEIGHT - 40);
             drawBubble(CANVAS_WIDTH / 2 + 100, CANVAS_HEIGHT - BUBBLE_RADIUS - 10, nextBubbleColor);
         }
+        
+        ctx.textAlign = 'left'; // Reset text alignment for other calls
 
         // Draw the moving bubble
         if (activeBubble && activeBubble.state === 'moving') {
@@ -463,11 +475,11 @@
         drawGrid();
         drawShooter();
 
-        // Draw the "Game Over" line
-        ctx.strokeStyle = 'rgba(255, 50, 50, 0.7)';
-        ctx.lineWidth = 3;
+        // Draw the "Game Over" line (now a vibrant warning line)
+        ctx.strokeStyle = '#ff00ff'; /* Magenta warning */
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(0, TOP_MARGIN + 9 * TILE_HEIGHT); // 9 rows down is the danger zone
+        ctx.moveTo(0, TOP_MARGIN + 9 * TILE_HEIGHT); 
         ctx.lineTo(CANVAS_WIDTH, TOP_MARGIN + 9 * TILE_HEIGHT);
         ctx.stroke();
     }
@@ -512,8 +524,6 @@
 
     /**
      * Handles collision by placing the active bubble into the nearest grid slot.
-     * @param {number} collisionX - The x-coord of the moving bubble at collision.
-     * @param {number} collisionY - The y-coord of the moving bubble at collision.
      */
     function handleCollision(collisionX, collisionY) {
         // Find the closest empty grid slot to the collision point
@@ -526,7 +536,6 @@
 
             // Ensure the column is within bounds and the cell is empty
             if (col < maxCols && col >= 0 && (!grid[row] || !grid[row][col])) {
-                // If row doesn't exist, create it (shouldn't happen with the ceiling collision logic)
                 if (!grid[row]) {
                     grid[row] = Array(GRID_COLS).fill(null);
                 }
@@ -537,7 +546,7 @@
                     grid[row][col] = activeBubble;
                     activeBubble = null;
                     
-                    // Play Attach Sound (before checking for a pop)
+                    // Play Attach Sound
                     if (synthAttach) {
                         synthAttach.triggerAttackRelease('16n');
                     }
@@ -560,9 +569,7 @@
             }
         }
 
-        // If collision failed to find an empty adjacent slot (e.g., hit between two),
-        // we revert the position slightly and try again to find the closest valid spot.
-        // In a complex game, this would involve iterative searching of neighbors.
+        // If collision failed, revert position and try again
         activeBubble.state = 'ready';
         activeBubble.vx = 0;
         activeBubble.vy = 0;
@@ -578,10 +585,10 @@
         const neighbors = [];
         const isOddRow = r % 2 !== 0;
 
-        // We only need 6 specific neighbors for the grid layout
+        // 6 specific neighbors for the grid layout
         const offsets = isOddRow
-            ? [[-1, 0], [-1, 1], [0, -1], [0, 1], [1, 0], [1, 1]] // Odd row
-            : [[-1, -1], [-1, 0], [0, -1], [0, 1], [1, -1], [1, 0]]; // Even row
+            ? [[-1, 0], [-1, 1], [0, -1], [0, 1], [1, 0], [1, 1]] 
+            : [[-1, -1], [-1, 0], [0, -1], [0, 1], [1, -1], [1, 0]]; 
 
 
         offsets.forEach(([dr, dc]) => {
@@ -613,7 +620,6 @@
             
             // Play Pop Sound
             if (synthPop) {
-                // Play different notes based on the size of the pop
                 const note = cluster.length > 5 ? 'C6' : 'C5';
                 synthPop.triggerAttackRelease(note, '8n');
             }
@@ -627,12 +633,7 @@
     }
 
     /**
-     * Finds a connected cluster of same-colored bubbles using Breadth-First Search (BFS).
-     * @param {number} startR - Starting row.
-     * @param {number} startC - Starting column.
-     * @param {string} color - The color to match.
-     * @param {boolean} onlySameColor - If true, only checks for bubbles of the same color.
-     * @returns {Array<Object>} - Array of connected bubbles.
+     * Finds a connected cluster of bubbles using BFS.
      */
     function findBubbleCluster(startR, startC, color, onlySameColor) {
         const queue = [{ r: startR, c: startC }];
@@ -663,7 +664,7 @@
     }
 
     /**
-     * Checks all bubbles for connectivity to the top (r=0) and drops non-connected ones.
+     * Drops non-connected bubbles.
      */
     function dropFloatingBubbles() {
         const connectedBubbles = new Set();
@@ -673,27 +674,25 @@
         // 1. Find all bubbles connected to the ceiling
         topRow.forEach(bubble => {
             if (bubble && bubble.state === 'fixed') {
-                const cluster = findBubbleCluster(bubble.r, bubble.c, null, false); // find all connected, regardless of color
+                const cluster = findBubbleCluster(bubble.r, bubble.c, null, false);
                 cluster.forEach(b => connectedBubbles.add(`${b.r},${b.c}`));
             }
         });
 
-        // 2. Iterate through all bubbles and remove those not in the connected set
+        // 2. Iterate and remove floating bubbles
         for (let r = 0; r < grid.length; r++) {
             for (let c = 0; c < grid[r].length; c++) {
                 const bubble = grid[r][c];
                 if (bubble && bubble.state === 'fixed' && !connectedBubbles.has(`${r},${c}`)) {
-                    grid[r][c] = null; // Remove it from the grid
-                    // Optional: add score for drops
+                    grid[r][c] = null; 
                     updateScore(5);
                     droppedCount++;
                 }
             }
         }
         
-        // Play Drop Sound if bubbles were dropped
+        // Play Drop Sound
         if (droppedCount > 0 && synthDrop) {
-            // Play a low thud sound
             synthDrop.triggerAttackRelease('C1', '8n');
         }
     }
@@ -722,21 +721,24 @@
         // Play Game End Sound
         if (synthGameEnd) {
             if (result === 'win') {
-                // Play a celebratory chord
                 synthGameEnd.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '1', Tone.now());
             } else {
-                // Play a simple loss tone
                 synthGameEnd.triggerAttackRelease(['C3', 'G2'], '1', Tone.now());
             }
         }
 
         messageBox.style.display = 'block';
         if (result === 'win') {
-            messageBox.textContent = `You Won! Final Score: ${score}`;
-            messageBox.style.backgroundColor = '#41d3a7';
+            messageBox.textContent = `SYSTEM ONLINE: SCORE ${score}`;
+            messageBox.style.backgroundColor = '#66bb6a';
+            messageBox.style.color = '#0d0a13';
+            messageBox.style.textShadow = 'none';
+
         } else {
-            messageBox.textContent = `Game Over! Final Score: ${score}. Tap to play again.`;
-            messageBox.style.backgroundColor = '#e94560';
+            messageBox.textContent = `SYSTEM OFFLINE: SCORE ${score}. TAP TO REBOOT.`;
+            messageBox.style.backgroundColor = '#ff4d4d';
+            messageBox.style.color = '#0d0a13';
+            messageBox.style.textShadow = 'none';
         }
     }
 
@@ -749,35 +751,28 @@
         const clientX = event.clientX;
         const clientY = event.clientY;
 
-        // Scale coordinates if canvas is resized
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
         const mouseX = (clientX - rect.left) * scaleX;
         const mouseY = (clientY - rect.top) * scaleY;
 
-        // Calculate angle between launcher and mouse position
         const dx = mouseX - activeBubble.x;
         const dy = mouseY - activeBubble.y;
         let angle = Math.atan2(dy, dx);
 
         // Limit angle to prevent shooting backwards
-        const minAngle = Math.PI * 0.05; // 9 degrees
-        const maxAngle = Math.PI * 0.95; // 171 degrees
+        const minAngle = Math.PI * 0.05; 
+        const maxAngle = Math.PI * 0.95;
 
         if (angle > -minAngle && angle <= 0) {
             angle = -minAngle;
         } else if (angle < -maxAngle) {
             angle = -maxAngle;
         } else if (angle > 0) {
-            // For Bubble Shooter, we typically only shoot up (negative Y velocity)
-            // If mouse is below the shooter, we should clamp to a sensible upward angle.
-            // A simple check to ensure it's pointing up:
             if (mouseY > activeBubble.y) {
-                 // Mouse is below shooter, cap the angle to straight up
                  angle = -Math.PI / 2;
             }
         }
-
 
         // Set velocity components
         activeBubble.vx = SHOOTER_SPEED * Math.cos(angle);
